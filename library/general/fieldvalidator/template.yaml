@@ -1,0 +1,40 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: fieldvalidator
+  annotations:
+    description: >-
+      Validate specified fields
+
+      Ingress resources must:
+      - include a valid TLS configuration
+      - include the `kubernetes.io/ingress.allow-http` annotation, set to
+        `false`.
+
+      https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+spec:
+  crd:
+    spec:
+      names:
+        kind: FieldValidator
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            fieldName:
+              description: >-
+                Validate this fields presence 
+              type: string
+
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package fieldvalidator
+
+        violation[{"msg": msg}] {
+            check_ingress_name == "N_DEFINED"
+            msg := "Ingress Class Name must be set"
+        }
+        check_ingress_name = "N_DEFINED" {
+            not object.get(input.review.object, split("spec.ingressClassName", "."), "N_DEFINED")
+        }

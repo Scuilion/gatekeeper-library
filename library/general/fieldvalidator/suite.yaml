@@ -1,0 +1,17 @@
+kind: Suite
+apiVersion: test.gatekeeper.sh/v1alpha1
+metadata:
+  name: field-validator
+tests:
+- name: field-validator
+  template: template.yaml
+  constraint: samples/field-validator/constraint.yaml
+  cases:
+  - name: example-allowed
+    object: samples/field-validator/example_allowed.yaml
+    assertions:
+    - violations: no
+  - name: example-disallowed
+    object: samples/field-validator/example_disallowed.yaml
+    assertions:
+    - violations: yes
